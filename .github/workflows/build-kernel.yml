@@ -34,7 +34,12 @@ jobs:
         with:
           ndk-version: r26b
           link-to-sdk: true
-
+      - name: 检出内核源码
+        uses: actions/checkout@v4
+        with:
+          ref: 14.0-Nanhumly
+          submodules: recursive
+          fetch-depth: 0
       - name: 内核配置
         run: |
           export ARCH=arm64
