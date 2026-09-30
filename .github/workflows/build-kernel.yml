@@ -1,0 +1,69 @@
+name: Build Kernel - 14.0-Nanhumly
+
+on:
+  push:
+    branches: [ "14.0-Nanhumly" ]
+    paths-ignore:
+      - '**.md'
+      - 'Documentation/**'
+  workflow_dispatch:
+
+jobs:
+  build-kernel:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+
+    steps:
+      - name: 检出内核源码
+        uses: actions/checkout@v4
+        with:
+          ref: 14.0-Nanhumly
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: 安装编译依赖
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential bc bison flex libssl-dev libelf-dev \
+            python3 curl git zip unzip cpio
+
+      - name: 配置Android NDK工具链
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26b
+          link-to-sdk: true
+
+      - name: 内核配置
+        run: |
+          export ARCH=arm64
+          export PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
+          export CROSS_COMPILE=aarch64-linux-android-
+          export CC=clang
+          export CLANG_TRIPLE=aarch64-linux-gnu
+          make xiaomi_msm8998_nanhumly_defconfig
+
+      - name: 编译内核与驱动模块
+        run: |
+          export ARCH=arm64
+          export PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
+          export CROSS_COMPILE=aarch64-linux-android-
+          export CC=clang
+          export CLANG_TRIPLE=aarch64-linux-gnu
+          make -j$(nproc) Image.gz-dtb dtbo.img modules
+
+      - name: 收集并打包产物
+        run: |
+          mkdir -p kernel_out/modules
+          cp arch/arm64/boot/Image.gz-dtb kernel_out/
+          cp arch/arm64/boot/dtbo.img kernel_out/
+          find drivers -name "*.ko" -exec cp {} kernel_out/modules/ \;
+          cd kernel_out && zip -r ../kernel-14.0-nanhumly.zip ./*
+
+      - name: 上传编译产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-14.0-nanhumly
+          path: kernel-14.0-nanhumly.zip
+          retention-days: 30
