@@ -37,7 +37,7 @@ jobs:
       - name: 下载 KernelSU-Next next分支 到内核源码根目录，移动到drivers/kernelsu
         run: |
           # 克隆KernelSU-Next到临时文件夹
-          git clone -b next --depth=1 https://github.com/KernelSU-Next/KernelSU-Next.git          # 如果旧文件夹存在先删除
+          git clone -b dev --depth=1 https://github.com/KernelSU-Next/KernelSU-Next.git          # 如果旧文件夹存在先删除
       - name: 内核配置
         run: |
           export ARCH=arm64
