@@ -52,9 +52,14 @@ jobs:
         run: |
           export ARCH=arm64
           export PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
-          export CROSS_COMPILE=aarch64-linux-android-
+          # NDK clang：CROSS_COMPILE 不要赋值！避免寻找 *‑gcc
+          export CROSS_COMPILE=
+          export CROSS_COMPILE_ARM32=
           export CC=clang
-          export CLANG_TRIPLE=aarch64-linux-gnu
+          export CXX=clang++
+          export LD=ld.lld
+          export CLANG_TRIPLE=aarch64-linux-android
+          make sagit_defconfig
           make -j$(nproc) Image.gz-dtb dtbo.img modules
 
       - name: 收集并打包产物
