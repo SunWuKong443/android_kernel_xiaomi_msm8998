@@ -1,0 +1,43 @@
+name: Build Xiaomi6 MSM8998 Kernel
+on:
+  workflow_dispatch: # 手动触发（页面点Run workflow）
+  push:
+    branches: [ main ] # 提交代码自动编译，按需关闭
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    env:
+      ARCH: arm64
+      SUBARCH: arm64
+      DEFCONFIG: sagit_defconfig
+      IMAGE_NAME: Image.gz-dtb
+      KERNEL_SOURCE: ${{ github.workspace }}
+    steps:
+      - name: Checkout kernel source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install build dependencies
+        run: |
+          sudo apt update -y
+          sudo apt install -y bc bison flex libssl-dev libelf-dev build-essential git ccache lzop cpio unzip zip dwarves
+
+      - name: Download AOSP Clang toolchain
+        run: |
+          git clone https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 --depth=1 clang
+          echo "CLANG_PATH=$PWD/clang/bin" >> $GITHUB_ENV
+
+      - name: Build Kernel
+        run: |
+          export PATH=${{ env.CLANG_PATH }}:$PATH
+          make ${{ env.DEFCONFIG }}
+          make -j$(nproc) LLVM=1 LLVM_IAS=1
+
+      - name: Upload kernel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Xiaomi6-Kernel-${{ github.sha }}
+          path: |
+            arch/arm64/boot/Image.gz-dtb
