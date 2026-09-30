@@ -2,9 +2,9 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ "14.0-Nanhumly" ]
+    branches: [ "16.0" ]
   pull_request:
-    branches: [ "14.0-Nanhumly" ]
+    branches: [ "16.0" ]
 
 jobs:
   build:
