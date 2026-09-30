@@ -45,7 +45,7 @@ jobs:
           export CROSS_COMPILE=aarch64-linux-android-
           export CC=clang
           export CLANG_TRIPLE=aarch64-linux-gnu
-          make xiaomi_msm8998_nanhumly_defconfig
+          make sagit_defconfig
 
       - name: 编译内核与驱动模块
         run: |
